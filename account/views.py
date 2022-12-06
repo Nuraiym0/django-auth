@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 
 from .serializers import RegisterUserSerializer
@@ -26,7 +27,7 @@ class RegisterUserView(APIView):
 class DeleteUserView(APIView):
     def delete(self, request, email):
         user = get_object_or_404(User, email=email)
-        if user.is_staff:
+        if user.is_staff or user != request.user:
             return Response(status=403) # zapreshaem
         user.delete()
         return Response(status=204)
@@ -40,9 +41,12 @@ class DeleteUserView(APIView):
     #     return Response(status=204)
 
 
-
-
-
+@api_view(['GET'])
+def check_auth(request):
+    if request.user.is_authenticated:
+    # print(request.user)
+        return Response(status=200)
+    return Response(status=401)
 
 
 
